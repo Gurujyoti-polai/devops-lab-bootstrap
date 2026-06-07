@@ -1,0 +1,21 @@
+# OpenTofu / Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfvars
+crash.log
+override.tf
+override.tf.json
+
+# Secrets and keys
+*.pem
+*.key
+*.env
+
+# macOS
+.DS_Store
+
+# Infracost
+.infracost/
+infracost-usage.yml
