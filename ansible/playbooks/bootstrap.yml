@@ -1,0 +1,19 @@
+---
+# Targets all running instances tagged Project=devops-lab
+# The group name comes from the dynamic inventory filter
+- name: Bootstrap lab EC2 instance
+  hosts: all
+  gather_facts: true
+
+  # Wait for SSH to be available — EC2 takes ~30s after launch
+  pre_tasks:
+    - name: Wait for SSH to come up
+      ansible.builtin.wait_for_connection:
+        delay: 10
+        timeout: 120
+
+    - name: Gather facts after SSH is ready
+      ansible.builtin.setup:
+
+  roles:
+    - common

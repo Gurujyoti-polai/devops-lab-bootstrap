@@ -1,0 +1,83 @@
+---
+# Update all system packages first — always do this on a fresh instance
+- name: Update all packages
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+  become: true
+
+# Core tools every phase needs
+- name: Install core tools
+  ansible.builtin.dnf:
+    name:
+      - git
+      - curl
+      - wget
+      - unzip
+      - jq
+      - tree
+      - htop
+      - net-tools
+      - bind-utils
+      - traceroute
+      - nmap
+      - tcpdump
+      - openssl
+    state: present
+  become: true
+
+# Docker — needed from Phase 1 onwards, install now so it's always there
+- name: Install Docker
+  ansible.builtin.dnf:
+    name: docker
+    state: present
+  become: true
+
+- name: Start and enable Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true
+
+# Add ec2-user to docker group so you don't need sudo for docker commands
+- name: Add ec2-user to docker group
+  ansible.builtin.user:
+    name: ec2-user
+    groups: docker
+    append: true
+  become: true
+
+# Python tools
+- name: Install Python3 and pip
+  ansible.builtin.dnf:
+    name:
+      - python3
+      - python3-pip
+    state: present
+  become: true
+
+- name: Install boto3 via pip
+  ansible.builtin.pip:
+    name:
+      - boto3
+      - botocore
+    state: present
+  become: true
+
+# Set a meaningful hostname so you know which lab box you're on
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "devops-lab-{{ phase_name }}"
+  become: true
+  vars:
+    phase_name: "{{ hostvars[inventory_hostname]['tags']['Phase'] | default('unknown') }}"
+
+# Print confirmation so you can see the bootstrap finished
+- name: Print lab ready message
+  ansible.builtin.debug:
+    msg: |
+      ✓ Lab instance ready
+        IP:    {{ ansible_host }}
+        Phase: {{ hostvars[inventory_hostname]['tags']['Phase'] | default('unknown') }}
+        SSH:   ssh -i ~/.ssh/devops-lab ec2-user@{{ ansible_host }}

@@ -1,0 +1,33 @@
+# Ansible dynamic inventory — queries AWS EC2 API at runtime
+# No hardcoded IPs — instances are discovered by tag
+
+plugin: amazon.aws.aws_ec2
+
+# Only look in ap-south-1
+regions:
+  - ap-south-1
+
+# Only return instances that are actually running
+filters:
+  instance-state-name: running
+  "tag:Project": devops-lab
+
+# Group instances by their Phase tag
+# This lets you target tag_Phase_phase_0, tag_Phase_phase_1 etc.
+keyed_groups:
+  - key: tags.Phase
+    prefix: tag_Phase
+    separator: "_"
+  - key: tags.Name
+    prefix: tag_Name
+    separator: "_"
+
+# Use public IP as the connection address
+hostnames:
+  - public-ip-address
+
+# Connection settings for all discovered instances
+compose:
+  ansible_host: public_ip_address
+  ansible_user: "'ec2-user'"
+  ansible_ssh_private_key_file: "'~/.ssh/devops-lab'"

@@ -7,13 +7,13 @@ terraform {
 
   backend "s3" {
 
-    bucket         = "devops-lab-tofu-state-278515800488"
+    bucket = "devops-lab-tofu-state-278515800488"
 
-    key            = "lab/tofu.tfstate"
+    key = "lab/tofu.tfstate"
 
-    region         = "ap-south-1"
+    region = "ap-south-1"
 
-    encrypt        = true
+    encrypt = true
 
     dynamodb_table = "devops-lab-tofu-locks"
 
