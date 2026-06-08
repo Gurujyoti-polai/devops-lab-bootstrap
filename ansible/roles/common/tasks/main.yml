@@ -1,18 +1,14 @@
 ---
-# Update all system packages first — always do this on a fresh instance
 - name: Update all packages
   ansible.builtin.dnf:
     name: "*"
     state: latest
   become: true
 
-# Core tools every phase needs
 - name: Install core tools
   ansible.builtin.dnf:
     name:
       - git
-      - curl
-      - wget
       - unzip
       - jq
       - tree
@@ -26,7 +22,12 @@
     state: present
   become: true
 
-# Docker — needed from Phase 1 onwards, install now so it's always there
+# curl-minimal is already installed on AL2023 and conflicts with full curl
+# It supports all flags we need: -I, -L, -v, -w, -X POST etc.
+- name: Verify curl-minimal is present
+  ansible.builtin.command: curl --version
+  changed_when: false
+
 - name: Install Docker
   ansible.builtin.dnf:
     name: docker
@@ -40,7 +41,6 @@
     enabled: true
   become: true
 
-# Add ec2-user to docker group so you don't need sudo for docker commands
 - name: Add ec2-user to docker group
   ansible.builtin.user:
     name: ec2-user
@@ -48,7 +48,6 @@
     append: true
   become: true
 
-# Python tools
 - name: Install Python3 and pip
   ansible.builtin.dnf:
     name:
@@ -65,19 +64,17 @@
     state: present
   become: true
 
-# Set a meaningful hostname so you know which lab box you're on
 - name: Set hostname
   ansible.builtin.hostname:
     name: "devops-lab-{{ phase_name }}"
   become: true
   vars:
-    phase_name: "{{ hostvars[inventory_hostname]['tags']['Phase'] | default('unknown') }}"
+    phase_name: "{{ hostvars[inventory_hostname]['ec2_tags']['Phase'] | default('unknown') }}"
 
-# Print confirmation so you can see the bootstrap finished
 - name: Print lab ready message
   ansible.builtin.debug:
     msg: |
-      ✓ Lab instance ready
+      Lab instance ready
         IP:    {{ ansible_host }}
-        Phase: {{ hostvars[inventory_hostname]['tags']['Phase'] | default('unknown') }}
+        Phase: {{ hostvars[inventory_hostname]['ec2_tags']['Phase'] | default('unknown') }}
         SSH:   ssh -i ~/.ssh/devops-lab ec2-user@{{ ansible_host }}

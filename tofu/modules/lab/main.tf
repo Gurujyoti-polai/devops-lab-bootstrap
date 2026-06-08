@@ -142,7 +142,7 @@ resource "aws_route_table_association" "private" {
 
 resource "aws_security_group" "lab_ec2" {
   name        = "devops-lab-ec2-sg-${var.phase_name}"
-  description = "Lab EC2 security group — SSH from your IP + extra ports"
+  description = "Lab EC2 security group - SSH from your IP + extra ports"
   vpc_id      = aws_vpc.lab.id
 
   ingress {
